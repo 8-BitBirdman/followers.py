@@ -1,0 +1,265 @@
+ChatGPT Prompt - 
+
+I want to create a very simple mac app that has a simple UI where it prompts me to select a solder on my local drive, and once I select it, it finds the files named following.html and followers_1.html
+
+After it reads all the data in both of them (in HTML), it makes and shows me a list of people which do not follow me.
+ChatGPT said:
+ChatGPT
+Memory updated
+To get you started, here's a basic outline of how you can achieve this in Swift for macOS. This app would use the Cocoa framework for the UI and file handling.
+
+Steps to Create the App
+Set up the UI: Use a simple window with a button to prompt the user to select a folder.
+File Selection: Once the folder is selected, search for following.html and followers_1.html.
+Parse HTML Files: Use HTML parsing to extract usernames or other identifiers.
+Compare Followers and Following: Find users who don’t follow back.
+Display Results: Show the list of non-followers.
+Here's a basic code outline for these tasks:
+
+1. Create the UI and Prompt for Folder Selection
+In Swift, you can use NSOpenPanel to prompt the user to select a folder.
+
+swift
+Copy code
+import Cocoa
+
+class ViewController: NSViewController {
+    
+    @IBAction func selectFolder(_ sender: Any) {
+        let dialog = NSOpenPanel()
+        dialog.title = "Choose a folder"
+        dialog.canChooseDirectories = true
+        dialog.canChooseFiles = false
+        dialog.allowsMultipleSelection = false
+        
+        if dialog.runModal() == .OK, let url = dialog.url {
+            processFiles(in: url)
+        }
+    }
+    
+    func processFiles(in folderURL: URL) {
+        // Find and read following.html and followers_1.html files here
+    }
+}
+2. Locate and Read the HTML Files
+You can look for the files in the selected folder.
+
+swift
+Copy code
+func processFiles(in folderURL: URL) {
+    let followingPath = folderURL.appendingPathComponent("following.html")
+    let followersPath = folderURL.appendingPathComponent("followers_1.html")
+    
+    guard let followingData = try? String(contentsOf: followingPath),
+          let followersData = try? String(contentsOf: followersPath) else {
+        print("Error reading files")
+        return
+    }
+    
+    let followingList = extractUsernames(from: followingData)
+    let followersList = extractUsernames(from: followersData)
+    
+    let nonFollowers = followingList.subtracting(followersList)
+    displayNonFollowers(nonFollowers)
+}
+3. Extract Usernames from HTML
+If the HTML files contain usernames in a straightforward format, you might use regular expressions to extract them. Swift’s NSRegularExpression can handle this, but be cautious with HTML parsing.
+
+swift
+Copy code
+func extractUsernames(from htmlData: String) -> Set<String> {
+    let pattern = "regex_pattern_for_usernames" // Define your regex for usernames
+    var usernames = Set<String>()
+    
+    let regex = try? NSRegularExpression(pattern: pattern)
+    let matches = regex?.matches(in: htmlData, range: NSRange(htmlData.startIndex..., in: htmlData))
+    
+    matches?.forEach {
+        if let range = Range($0.range, in: htmlData) {
+            usernames.insert(String(htmlData[range]))
+        }
+    }
+    
+    return usernames
+}
+4. Display the List of Non-Followers
+For a simple display, you could use a NSTextView or NSTableView to show the non-followers list in the main window.
+
+swift
+Copy code
+func displayNonFollowers(_ nonFollowers: Set<String>) {
+    // Display non-followers in the app’s UI (e.g., using NSTextView or NSTableView)
+}
+Additional Tips
+Error Handling: Make sure to handle cases where files might not exist or contain unexpected data.
+HTML Parsing: Depending on the complexity of following.html and followers_1.html, a more robust HTML parsing library like SwiftSoup might help.
+This outline should help you get started with the core functionality. Let me know if you need more specifics on any part!
+
+
+
+
+
+
+You said:
+Thank you! Is there an easier or same option to do make this app in Python and if so, give me the source code
+ChatGPT said:
+ChatGPT
+You can create a similar macOS app using Python with the help of the tkinter library for the UI and beautifulsoup4 for HTML parsing. This will provide a simple cross-platform interface and make it easier to parse the HTML files.
+
+Here's a complete Python code for the app:
+
+Requirements
+Install the necessary libraries:
+
+bash
+Copy code
+pip install beautifulsoup4
+Python Code for the App
+python
+Copy code
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from bs4 import BeautifulSoup
+import os
+
+def select_folder():
+    folder_path = filedialog.askdirectory()
+    if folder_path:
+        process_files(folder_path)
+
+def process_files(folder_path):
+    # Define the paths to following.html and followers_1.html
+    following_path = os.path.join(folder_path, "following.html")
+    followers_path = os.path.join(folder_path, "followers_1.html")
+    
+    if not os.path.exists(following_path) or not os.path.exists(followers_path):
+        messagebox.showerror("Error", "Required files not found in the selected folder.")
+        return
+    
+    # Parse the HTML files to extract the list of followers and following
+    following_list = extract_usernames(following_path)
+    followers_list = extract_usernames(followers_path)
+    
+    # Find non-followers
+    non_followers = following_list - followers_list
+    
+    # Display non-followers
+    display_non_followers(non_followers)
+
+def extract_usernames(file_path):
+    with open(file_path, "r", encoding="utf-8") as file:
+        soup = BeautifulSoup(file, "html.parser")
+        
+        # Adjust this based on HTML structure - example for extracting links with usernames
+        usernames = set(tag.text.strip() for tag in soup.find_all("a", href=True))
+        
+    return usernames
+
+def display_non_followers(non_followers):
+    result_window = tk.Toplevel(root)
+    result_window.title("Non-Followers")
+    
+    if non_followers:
+        result_text = "\n".join(non_followers)
+    else:
+        result_text = "Everyone follows you back!"
+    
+    text_widget = tk.Text(result_window, wrap="word", width=50, height=20)
+    text_widget.insert("1.0", result_text)
+    text_widget.config(state="disabled")  # Make text read-only
+    text_widget.pack(expand=True, fill="both", padx=10, pady=10)
+
+# Set up the main application window
+root = tk.Tk()
+root.title("Non-Followers Finder")
+
+# Add a button to select the folder
+select_button = tk.Button(root, text="Select Folder", command=select_folder)
+select_button.pack(pady=20)
+
+# Run the application
+root.geometry("300x150")
+root.mainloop()
+How It Works
+Folder Selection: Prompts the user to choose a folder.
+File Processing: Looks for following.html and followers_1.html in the selected folder.
+HTML Parsing: Parses both files to get the usernames using BeautifulSoup.
+Non-Followers List: Displays the list of people who don't follow back.
+Adjusting the Parsing Logic
+If the usernames aren’t in <a> tags, adjust the extract_usernames function to target the correct HTML elements. You may use other tags or classes based on the HTML structure.
+
+This code will work on macOS and is easily adaptable to other platforms as well. Let me know if you have any questions!
+
+
+
+
+
+
+You said:
+Thank you!
+ChatGPT said:
+ChatGPT
+You're very welcome! 😊 I’m glad you found it helpful. If you have any more questions or need further adjustments to the code, feel free to ask. Good luck with your app! 🚀
+
+
+
+
+
+
+You said:
+I am super novice to python. How do I open python on mac, where do I paste the code and how do I save and run it?
+ChatGPT said:
+ChatGPT
+Memory updated
+No problem! Here’s a step-by-step guide to running Python code on your Mac:
+
+Step 1: Open a Text Editor
+You can use a simple text editor like TextEdit on your Mac, but it’s better to use a code editor such as Visual Studio Code or Sublime Text. For now, let's use TextEdit:
+
+Open TextEdit (you can find it in Applications).
+Go to Format in the menu and select Make Plain Text. This will save it as a plain .py file instead of a .txt file.
+Step 2: Paste the Python Code
+Copy the code I provided and paste it into the editor.
+
+Step 3: Save the File
+Go to File > Save.
+Name the file something like non_followers_finder.py (make sure to include the .py extension).
+Choose a location like Desktop or Documents so you can easily find it.
+Step 4: Open Terminal
+Open Terminal (you can find it by searching in Spotlight or in Applications > Utilities).
+
+In Terminal, navigate to the directory where you saved your file. For example, if you saved it on the Desktop, type:
+
+bash
+Copy code
+cd Desktop
+Press Enter to move into the Desktop directory.
+
+Step 5: Run the Python Code
+In Terminal, type the following command:
+
+bash
+Copy code
+python3 non_followers_finder.py
+Then press Enter. This will run your Python script.
+
+Installing Required Libraries
+If you see an error about beautifulsoup4 not being installed, you can install it by typing:
+
+bash
+Copy code
+pip3 install beautifulsoup4
+Once installed, run the script again with python3 non_followers_finder.py.
+
+And that’s it! The program will launch, and you should see the app window open. Let me know if you need any more help!
+
+
+
+
+
+
+You said:
+Thank you!
+ChatGPT said:
+ChatGPT
+You're very welcome! 😊 I'm glad I could help. Enjoy building your app, and don't hesitate to reach out if you have any more questions. Happy coding! 🚀🐍
