@@ -1,2 +1,2 @@
 Simple and easy Python script to see the list of people who do not follow you on Instagram based on the data download/export feature on IG.
-![image](https://github.com/user-attachments/assets/6362b72b-a302-468b-b09c-d1c9b3a8774d)
+https://drive.google.com/file/d/1ahC6Vs2QAWlaDNem_dM4XztzMRmvTVqX/view?usp=sharing
